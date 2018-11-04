@@ -75,6 +75,24 @@ export const asyncRouterMap = [
   },
 
   {
+    path: '/data',
+    component: Layout,
+    name: 'Data',
+    meta: {
+      title: "Data",
+      icon: 'nested'
+    },
+    children: [
+      {
+        path: 'project',
+        component: () => import('@/views/data/project/index'),
+        name: "Project",
+        meta: {title: 'Project'}
+      }
+    ]
+  },
+
+  {
     path: '/nested',
     component: Layout,
     redirect: '/nested/menu1',
