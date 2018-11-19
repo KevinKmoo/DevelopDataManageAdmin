@@ -24,7 +24,7 @@ export function createVersion(name, description, publishTime){
         url: "version/create",
         method: "post",
         data: {
-            name: name,
+            name: aname,
             description: description,
             publishTime: publishTime
         }

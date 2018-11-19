@@ -94,7 +94,13 @@ export const asyncRouterMap = [
         component: () => import('@/views/data/version/index'),
         name: "Version",
         meta: {title: 'Version'}
-      }
+      },
+      {
+        path: 'module',
+        component: () => import('@/views/data/module/index'),
+        name: "Module",
+        meta: {title: 'Module'}
+      },
     ]
   },
 
