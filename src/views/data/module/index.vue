@@ -1,12 +1,12 @@
 <template>
     <el-container>
         <el-header style="margin-top:30px">
-            <el-select v-model="selectProjectId" placeholder="请选择项目" @change="getModuleList(selectProjectId)">
+            <el-select v-model="selectProject" value-key="id" placeholder="请选择项目" @change="getModuleList(selectProject.id)">
                 <el-option
                     v-for="item in projectList"
                     :key="item.id"
                     :label="item.projectName"
-                    :value="item.id">
+                    :value="item">
                 </el-option>
             </el-select>
 
@@ -126,7 +126,7 @@ export default {
         return {
             projectList: null,
             moduleList: null,
-            selectProjectId: null,
+            selectProject: null,
             selectVersionId: null,
             dialogCreateModuleVisible: false,
             dialogUpdateModuleVisible: false,
@@ -154,11 +154,11 @@ export default {
             getAllProject().then(respose => {
                 this.listLoading = false
                 this.projectList = respose.retData
-                this.selectProjectId = this.projectList[0].id
+                this.selectProject = this.projectList[0]
                 this.createForm.projectName = this.projectList[0].projectName
                 this.updateForm.projectName = this.projectList[0].projectName
-                this.getModuleList(this.selectProjectId)
-                this.getVersionList(this.selectProjectId)
+                this.getModuleList(this.selectProject.id)
+                this.getVersionList(this.selectProject.id)
             })
         },
         getModuleList(projectId){
