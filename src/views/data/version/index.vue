@@ -1,28 +1,41 @@
 <template>
     <el-container>
-        <el-header>
+        <el-header style="margin-top:30px">
+            <el-select v-model="selectProject" value-key="id" placeholder="请选择项目" @change="getVersionList(selectProject)">
+                <el-option
+                    v-for="item in projectList"
+                    :key="item.id"
+                    :label="item.projectName"
+                    :value="item">
+                </el-option>
+            </el-select>
+
             <el-button type="primary" @click="dialogCreateVersionVisible = true" style="margin-top:20px">创建版本</el-button>
+
             <el-dialog title="创建版本" :visible.sync="dialogCreateVersionVisible">
-        <el-form :model="form">
-            <el-form-item label="版本名称" :label-width="formLabelWidth">
-                <el-input v-model="form.name" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="版本描述" :label-width="formLabelWidth">
-                <el-input v-model="form.description" autocomplete="off"></el-input>
-            </el-form-item>
-            <el-form-item label="发布时间" :label-width="formLabelWidth">
-                <el-date-picker
-                    v-model="form.publishTime"
-                    type="datetime"
-                    placeholder="选择发布时间">
-                </el-date-picker>
-            </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-            <el-button @click="dialogCreateVersionVisible = false">取 消</el-button>
-            <el-button type="primary" @click="createVersion()">确 定</el-button>
-        </div>
-    </el-dialog>
+                <el-form :model="createVersionForm">
+                    <el-form-item label="版本名称" :label-width="formLabelWidth">
+                        <el-input v-model="createVersionForm.name" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="版本描述" :label-width="formLabelWidth">
+                        <el-input v-model="createVersionForm.description" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="所属项目" :label-width="formLabelWidth">
+                        <el-input v-model="selectProject.projectName" readonly="true"></el-input>
+                    </el-form-item>
+                    <el-form-item label="发布时间" :label-width="formLabelWidth">
+                        <el-date-picker
+                          v-model="createVersionForm.publishTime"
+                          type="datetime"
+                          placeholder="选择发布时间">
+                        </el-date-picker>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogCreateVersionVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="createVersion()">确 定</el-button>
+                </div>
+            </el-dialog>
         </el-header>
 
         <el-main>
@@ -76,12 +89,12 @@
     </el-table>
 
     <el-dialog title="编辑版本" :visible.sync="dialogEditVersionVisible">
-        <el-form :model="form">
+        <el-form :model="updateVersionForm">
             <el-form-item label="版本名称" :label-width="formLabelWidth">
-                <el-input v-model="form.name" autocomplete="off"></el-input>
+                <el-input v-model="updateVersionForm.name" autocomplete="off"></el-input>
             </el-form-item>
             <el-form-item label="版本描述" :label-width="formLabelWidth">
-                <el-input v-model="form.description" autocomplete="off"></el-input>
+                <el-input v-model="updateVersionForm.description" autocomplete="off"></el-input>
             </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -97,14 +110,15 @@
 </template>
 
 <script>
-import { getAllVersion } from "@/api/data/version";
-import { updateVersion } from "@/api/data/version";
-import { createVersion } from "@/api/data/version";
+import { getAllProject } from "@/api/data/project"
+import { getVersionList,updateVersion,createVersion } from "@/api/data/version";
 import { formatDate } from "@/utils/common"
 
 export default {
   data() {
     return {
+      selectProject: null,
+      projectList: null,
       versionList: null,
       listLoading: true,
       dialogEditVersionVisible: false,
@@ -115,44 +129,61 @@ export default {
           name: '',
           description: '',
       },
-      form:{
+      createVersionForm:{
           name: '',
+          projectName: '',
           description: '',
           publishTime: '',
       },
+      updateVersionForm:{
+          name: '',
+          projectName: '',
+          description: '',
+          publishTime: '',
+      }
     };
   },
   created() {
-    this.fetchData();
+    this.getAllProjectList();
   },
   methods: {
-    fetchData() {
-      this.listLoading = true;
-      getAllVersion().then(response => {
-        this.versionList = response.retData;
-        this.listLoading = false;
-      });
+    getAllProjectList() {
+            this.listLoading = true
+            getAllProject().then(respose => {
+                this.listLoading = false
+                this.projectList = respose.retData
+                this.selectProject = this.projectList[0]
+                this.createVersionForm.projectName = this.projectList[0].projectName
+                this.getVersionList(this.selectProject)
+            })
     },
+    getVersionList(project){
+            this.listLoading = true
+            getVersionList(project.id).then(response => {
+                this.listLoading = false
+                this.versionList = response.retData
+            })
+        },
     edit(row) {
         this.needEditRow = row;
-        this.form.name = row.name;
-        this.form.description = row.description;
+        this.updateVersionForm.name = row.name;
+        this.updateVersionForm.description = row.description;
         this.dialogEditVersionVisible = true;
     },
     updateVersion() {
         this.listLoading = true;
-        updateVersion(this.needEditRow.id , this.form.name , this.form.description).then(response => {
+        updateVersion(this.needEditRow.id , this.updateVersionForm.name , this.updateVersion.description).then(response => {
             this.listLoading = false;
             this.dialogEditVersionVisible = false;
-            this.fetchData()
+            this.getVersionList(this.selectProject)
         })
     },
     createVersion() {
         this.listLoading = true;
-        createVersion(this.form.name , this.form.description , formatDate(new Date(this.form.publishTime) , "yyyy-MM-dd HH:mm:ss")).then(response => {
-            this.listLoading = false;
-            this.dialogCreateVersionVisible = false;
-            this.fetchData()
+        createVersion(this.createVersionForm.name , this.createVersionForm.description ,this.selectProject.id, formatDate(new Date(this.createVersionForm.publishTime) , "yyyy-MM-dd hh:mm:ss")).then(response => {
+            this.listLoading = false
+            this.dialogCreateVersionVisible = false
+            this.getVersionList(this.selectProject)
         })
     }
   }

@@ -101,6 +101,12 @@ export const asyncRouterMap = [
         name: "Module",
         meta: {title: 'Module'}
       },
+      {
+        path: 'page',
+        component: () => import('@/views/data/page/index'),
+        name: "Page",
+        meta: {title: 'Page'}
+      },
     ]
   },
 
